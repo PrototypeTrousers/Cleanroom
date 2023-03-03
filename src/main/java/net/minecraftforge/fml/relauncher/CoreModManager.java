@@ -231,6 +231,7 @@ public class CoreModManager {
         tweaker.injectCascadingTweak("net.minecraftforge.fml.common.launcher.FMLInjectionAndSortingTweaker");
         try
         {
+            classLoader.registerTransformer("net.minecraftforge.fml.common.asm.transformers.ASMUpper");
             classLoader.registerTransformer("net.minecraftforge.fml.common.asm.transformers.PatchingTransformer");
         }
         catch (Exception e)
