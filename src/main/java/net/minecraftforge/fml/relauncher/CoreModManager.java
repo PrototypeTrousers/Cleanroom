@@ -72,6 +72,7 @@ import org.apache.logging.log4j.core.LoggerContext;
 public class CoreModManager {
     private static final Attributes.Name COREMODCONTAINSFMLMOD = new Attributes.Name("FMLCorePluginContainsFMLMod");
     private static final Attributes.Name MODTYPE = new Attributes.Name("ModType");
+    private static Method ADDURL = null;
     private static String[] rootPlugins = { "net.minecraftforge.fml.relauncher.FMLCorePlugin", "net.minecraftforge.classloading.FMLForgePlugin" };
     private static List<String> ignoredModFiles = Lists.newArrayList();
     private static Map<String, List<String>> transformers = Maps.newHashMap();
@@ -451,8 +452,6 @@ public class CoreModManager {
         }
     }
 
-    private static Method ADDURL;
-
     private static void handleCascadingTweak(File coreMod, JarFile jar, String cascadedTweaker, LaunchClassLoader classLoader, Integer sortingOrder)
     {
         try
@@ -460,10 +459,11 @@ public class CoreModManager {
             // Have to manually stuff the tweaker into the parent classloader
             if (ADDURL == null)
             {
-                ADDURL = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
+                ADDURL = classLoader.getClass().getClassLoader().getClass().getSuperclass().getDeclaredMethod("appendClassPath", String.class);
                 ADDURL.setAccessible(true);
             }
-            ADDURL.invoke(classLoader.getClass().getClassLoader(), coreMod.toURI().toURL());
+            ADDURL.invoke(classLoader.getClass().getClassLoader(), coreMod.getAbsolutePath());
+
             classLoader.addURL(coreMod.toURI().toURL());
             CoreModManager.tweaker.injectCascadingTweak(cascadedTweaker);
             tweakSorting.put(cascadedTweaker,sortingOrder);
