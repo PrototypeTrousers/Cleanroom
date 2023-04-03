@@ -76,6 +76,7 @@ import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.Drawable;
 import org.lwjgl.opengl.SharedDrawable;
 import org.lwjgl.util.glu.GLU;
+import org.lwjgl3.opengl.GL;
 
 /**
  * Not a fully fleshed out API, may change in future MC versions.
@@ -207,10 +208,25 @@ public class SplashProgress
             @Override
             public String call() throws Exception
             {
-                return "' Vendor: '" + glGetString(GL_VENDOR) +
-                       "' Version: '" + glGetString(GL_VERSION) +
-                       "' Renderer: '" + glGetString(GL_RENDERER) +
-                       "'";
+                boolean hasGlContext = true;
+                try {
+                    if (GL.getCapabilities() == null) {
+                        hasGlContext = false;
+                    }
+                } catch (IllegalStateException ise) {
+                    // No OpenGL context in current thread
+                    hasGlContext = false;
+                }
+                if (hasGlContext) {
+                    return "' Vendor: '" + glGetString(GL_VENDOR)
+                            + "' Version: '"
+                            + glGetString(GL_VERSION)
+                            + "' Renderer: '"
+                            + glGetString(GL_RENDERER)
+                            + "'";
+                } else {
+                    return "No OpenGL context present in the calling thread: " + Thread.currentThread().getName();
+                }
             }
 
             @Override

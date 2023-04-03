@@ -19,6 +19,8 @@
 
 package net.minecraftforge.client.model.pipeline;
 
+import java.util.Collections;
+import java.util.ConcurrentModificationException;
 import java.util.List;
 
 import net.minecraft.block.state.IBlockState;
@@ -92,7 +94,14 @@ public class ForgeBlockModelRenderer extends BlockModelRenderer
         lighter.setState(state);
         lighter.setBlockPos(pos);
         boolean empty = true;
-        List<BakedQuad> quads = model.getQuads(state, null, rand);
+        List<BakedQuad> quads = Collections.emptyList();
+        while (true) {
+            try {
+               quads  = model.getQuads(state, null, rand);
+               break;
+            } catch (ConcurrentModificationException ignored) {
+            }
+        }
         if(!quads.isEmpty())
         {
             lighter.updateBlockInfo();
@@ -104,7 +113,13 @@ public class ForgeBlockModelRenderer extends BlockModelRenderer
         }
         for(EnumFacing side : EnumFacing.values())
         {
-            quads = model.getQuads(state, side, rand);
+            while (true) {
+                try {
+                    quads  = model.getQuads(state, side, rand);
+                    break;
+                } catch (ConcurrentModificationException ignored) {
+                }
+            }
             if(!quads.isEmpty())
             {
                 if(!checkSides || state.shouldSideBeRendered(world, pos, side))
